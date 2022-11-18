@@ -1,0 +1,51 @@
+var operatorsAsDictionary = { "-": true, "*": true, "+": true, "/": true };
+var valuesOperator = operatorsAsDictionary.keys();
+
+function isNumberOrDot(char) {
+	return (char[0] >= 48 and char[0] <= 57) or char == ".";
+}
+
+function tokenize(formula) {
+	var position = 0;
+	var values = [];
+	var currentValue = "";
+
+	var appendNumber = function [values](number) {
+		if number.find(".") == null then {
+			values.push(Integer(number));
+		} else {
+			values.push(Real(number));
+		}
+	};
+
+	for var i in 0:formula.size() do {
+		var char = formula[i:i+1];
+		var isOperator = operatorsAsDictionary.has(char);
+		if isOperator then {
+			if currentValue.size() != 0 then {
+				appendNumber(currentValue);
+				currentValue = "";
+			}
+			values.push(char);
+		} else if isNumberOrDot(char) then {
+			currentValue += char;
+		} else if currentValue.size() != 0 and char == " " then {
+			appendNumber(currentValue);
+			currentValue = "";
+		} else if char != " " then {
+			throw "Unexpected token: " + "\"" + char + "\"" + " at position: " + i;
+		}
+
+		position += 1;
+	}
+
+	if currentValue.size() != 0 then {
+		appendNumber(currentValue);
+		currentValue = "";
+	}
+	return values;
+}
+
+var result = tokenize("  13 + 17  ");
+
+print(result + " result ");
