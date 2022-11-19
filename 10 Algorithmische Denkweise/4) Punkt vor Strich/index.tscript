@@ -1,0 +1,115 @@
+var operatorsAsDictionary = { "-": true, "*": true, "+": true, "/": true };
+var valuesOperator = operatorsAsDictionary.keys();
+
+function isTypeOfNumber(string) {
+	var typeString = Type(string);
+	return typeString == Real or typeString == Integer;
+}
+
+function isNumberOrDot(char) {
+	return (char[0] >= 48 and char[0] <= 57) or char == ".";
+}
+
+function tokenize(formula) {
+	var position = 0;
+	var values = [];
+	var currentValue = "";
+
+	var appendNumber = function [values](number) {
+		if number.find(".") == null then {
+			values.push(Integer(number));
+		} else {
+			values.push(Real(number));
+		}
+	};
+
+	for var i in 0:formula.size() do {
+		var char = formula[i:i+1];
+		var isOperator = operatorsAsDictionary.has(char);
+		if isOperator then {
+			if currentValue.size() != 0 then {
+				appendNumber(currentValue);
+				currentValue = "";
+			}
+			values.push(char);
+		} else if isNumberOrDot(char) then {
+			currentValue += char;
+		} else if currentValue.size() != 0 and char == " " then {
+			appendNumber(currentValue);
+			currentValue = "";
+		} else if char != " " then {
+			throw "Unexpected token: " + "\"" + char + "\"" + " at position: " + i;
+		}
+
+		position += 1;
+	}
+
+	if currentValue.size() != 0 then {
+		appendNumber(currentValue);
+		currentValue = "";
+	}
+	return values;
+}
+
+function extractOperator(string) {
+	var result = "";
+	for var i in 0:string.size() do {
+		var value = string[i:i+1];
+
+		if result.size() == 0 then {
+			result = value;
+		} else if value == "-" and result == "-" then {
+			result = "+";
+		} else if value == "+" and result == "-" then {
+			result = "-";
+		} else if value == "-" and result == "+" then {
+			result = "-";
+		}
+	}
+	return result;
+}
+
+function numberWithOperator(number, sign) {
+	if sign == "-" then {
+		return number * -1;
+	}
+	return number;
+}
+
+function evaluateSum(formula) {
+	formula = tokenize(formula);
+	var operators = "";
+	var sum = 0;
+
+	for var value in formula do {
+		if isTypeOfNumber(value) then {
+			if operators.size() != 0 then {
+				print("operators: " + operators);
+
+				if operators.find("*") == null and operators.find("/") == null then {
+					var sign = extractOperator(operators);
+					sum += numberWithOperator(value, sign);
+					operators = "";
+				} else if operators == "*" then {
+
+					print("sum: " + sum);
+					print("value: " + value);
+					print("");
+
+					sum *= Real(value);
+				} else if operators == "/" then {
+					sum /= Real(value);
+				}
+			} else {
+				sum += value;
+			}
+		} else {
+			operators += value;
+# 			print("operator: " + value);
+		}
+	}
+	return sum;
+}
+
+
+print("sum: " + evaluateSum("  +7 * 5  "));
